@@ -32,37 +32,39 @@
   ==============================================================================
 */
 import { Backend } from "./backend";
-if (typeof window.__JUCE__ !== "undefined" &&
-    typeof window.__JUCE__.getAndroidUserScripts !== "undefined" &&
-    typeof window.inAndroidUserScriptEval === "undefined") {
-    window.inAndroidUserScriptEval = true;
-    eval(window.__JUCE__.getAndroidUserScripts());
-    delete window.inAndroidUserScriptEval;
-}
-{
-    if (typeof window.__JUCE__ === "undefined") {
-        console.warn("The 'window.__JUCE__' object is undefined." +
-            " Native integration features will not work." +
-            " Defining a placeholder 'window.__JUCE__' object.");
-        window.__JUCE__ = {
-            postMessage: function () { },
-            getAndroidUserScripts: function () {
-                return "";
-            },
-            backend: new Backend(),
-        };
+export function checkNativeInterops() {
+    if (typeof window.__JUCE__ !== "undefined" &&
+        typeof window.__JUCE__.getAndroidUserScripts !== "undefined" &&
+        typeof window.inAndroidUserScriptEval === "undefined") {
+        window.inAndroidUserScriptEval = true;
+        eval(window.__JUCE__.getAndroidUserScripts());
+        delete window.inAndroidUserScriptEval;
     }
-    if (typeof window.__JUCE__.initialisationData === "undefined") {
-        window.__JUCE__.initialisationData = {
-            __juce__platform: [],
-            __juce__functions: [],
-            __juce__registeredGlobalEventIds: [],
-            __juce__sliders: [],
-            __juce__toggles: [],
-            __juce__comboBoxes: [],
-        };
+    {
+        if (typeof window.__JUCE__ === "undefined") {
+            console.warn("The 'window.__JUCE__' object is undefined." +
+                " Native integration features will not work." +
+                " Defining a placeholder 'window.__JUCE__' object.");
+            window.__JUCE__ = {
+                postMessage: function () { },
+                getAndroidUserScripts: function () {
+                    return "";
+                },
+                backend: new Backend(),
+            };
+        }
+        if (typeof window.__JUCE__.initialisationData === "undefined") {
+            window.__JUCE__.initialisationData = {
+                __juce__platform: [],
+                __juce__functions: [],
+                __juce__registeredGlobalEventIds: [],
+                __juce__sliders: [],
+                __juce__toggles: [],
+                __juce__comboBoxes: [],
+            };
+        }
+        if (typeof window.__JUCE__.backend === "undefined")
+            window.__JUCE__.backend = new Backend();
     }
-    if (typeof window.__JUCE__.backend === "undefined")
-        window.__JUCE__.backend = new Backend();
 }
 //# sourceMappingURL=checkNativeInterops.js.map

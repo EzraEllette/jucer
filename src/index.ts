@@ -32,80 +32,142 @@
   ==============================================================================
 */
 
-import "./checkNativeInterops";
+import { checkNativeInterops } from "./checkNativeInterops";
 import { ComboBoxState } from "./comboBoxState";
 import { ControlParameterIndexUpdater } from "./controlParameterIndexUpdater";
-import { getBackendResourceAddress } from "./getBackendResourceAddress";
-import { getNativeFunction } from "./getNativeFunction";
+import { JuceEvents } from "./events";
+import { PromiseHandler } from "./promiseHandler";
 import { SliderState } from "./sliderState";
 import { ToggleState } from "./toggleState";
 
-const sliderStates = new Map();
+export { JuceEvents, ControlParameterIndexUpdater };
 
-for (const sliderName of window.__JUCE__.initialisationData.__juce__sliders)
-  sliderStates.set(sliderName, new SliderState(sliderName));
+export default class Jucer {
+  private sliderStates: Map<string, SliderState>;
+  private toggleStates: Map<string, ToggleState>;
+  private comboBoxStates: Map<string, ComboBoxState>;
+  //@ts-ignore no-unused-vars
+  private promiseHandler: PromiseHandler;
+  constructor() {
+    if (!window)
+      throw new Error(
+        "Jucer must be initialised from within a browser environment"
+      );
+    checkNativeInterops();
 
-/**
- * Returns a SliderState object that is connected to the backend WebSliderRelay object that was
- * created with the same name argument.
- *
- * To register a WebSliderRelay object create one with the right name and add it to the
- * WebBrowserComponent::Options struct using withOptionsFrom.
- *
- * @param {String} name
- */
-function getSliderState(name: string) {
-  if (!sliderStates.has(name)) sliderStates.set(name, new SliderState(name));
+    this.sliderStates = new Map();
+    this.toggleStates = new Map();
+    this.comboBoxStates = new Map();
+    this.promiseHandler = new PromiseHandler();
 
-  return sliderStates.get(name);
+    for (const name of window.__JUCE__.initialisationData.__juce__toggles)
+      this.toggleStates.set(name, new ToggleState(name));
+
+    for (const sliderName of window.__JUCE__.initialisationData.__juce__sliders)
+      this.sliderStates.set(sliderName, new SliderState(sliderName));
+
+    for (const name of window.__JUCE__.initialisationData.__juce__comboBoxes)
+      this.comboBoxStates.set(name, new ComboBoxState(name));
+  }
+
+  /**
+   * Returns a SliderState object that is connected to the backend WebSliderRelay object that was
+   * created with the same name argument.
+   *
+   * To register a WebSliderRelay object create one with the right name and add it to the
+   * WebBrowserComponent::Options struct using withOptionsFrom.
+   *
+   * @param {String} name
+   */
+  getSliderState(name: string) {
+    if (!this.sliderStates.has(name))
+      this.sliderStates.set(name, new SliderState(name));
+
+    return this.sliderStates.get(name);
+  }
+
+  /**
+   * Returns a ToggleState object that is connected to the backend WebToggleButtonRelay object that was
+   * created with the same name argument.
+   *
+   * To register a WebToggleButtonRelay object create one with the right name and add it to the
+   * WebBrowserComponent::Options struct using withOptionsFrom.
+   *
+   * @param {String} name
+   */
+  getToggleState(name: string) {
+    if (!this.toggleStates.has(name))
+      this.toggleStates.set(name, new ToggleState(name));
+
+    return this.toggleStates.get(name);
+  }
+
+  /**
+   * Returns a ComboBoxState object that is connected to the backend WebComboBoxRelay object that was
+   * created with the same name argument.
+   *
+   * To register a WebComboBoxRelay object create one with the right name and add it to the
+   * WebBrowserComponent::Options struct using withOptionsFrom.
+   *
+   * @param {String} name
+   */
+  getComboBoxState(name: string) {
+    if (!this.comboBoxStates.has(name))
+      this.comboBoxStates.set(name, new ComboBoxState(name));
+
+    return this.comboBoxStates.get(name);
+  }
+
+  /**
+   * Returns a function object that calls a function registered on the JUCE backend and forwards all
+   * parameters to it.
+   *
+   * The provided name should be the same as the name argument passed to
+   * WebBrowserComponent::Options.withNativeFunction() on the backend.
+   *
+   * @param {String} name
+   */
+  getNativeFunction(name: string): Function {
+    if (!window.__JUCE__.initialisationData.__juce__functions.includes(name))
+      console.warn(
+        `Creating native function binding for '${name}', which is unknown to the backend`
+      );
+
+    const f = function () {
+      const [promiseId, result] = this.promiseHandler.createPromise();
+
+      window.__JUCE__.backend.emitEvent(JuceEvents.Invoke, {
+        name: name,
+        params: Array.prototype.slice.call(arguments),
+        resultId: promiseId,
+      });
+
+      return result;
+    };
+
+    return f;
+  }
+
+  /**
+   * Appends a platform-specific prefix to the path to ensure that a request sent to this address will
+   * be received by the backend's ResourceProvider.
+   * @param {String} path
+   */
+  getBackendResourceAddress(path: string) {
+    const platform =
+      window.__JUCE__.initialisationData.__juce__platform.length > 0
+        ? window.__JUCE__.initialisationData.__juce__platform[0]
+        : "";
+
+    if (platform == "windows" || platform == "android")
+      return "https://juce.backend/" + path;
+
+    if (platform == "macos" || platform == "ios" || platform == "linux")
+      return "juce://juce.backend/" + path;
+
+    console.warn(
+      "getBackendResourceAddress() called, but no JUCE native backend is detected."
+    );
+    return path;
+  }
 }
-
-const toggleStates = new Map();
-
-for (const name of window.__JUCE__.initialisationData.__juce__toggles)
-  toggleStates.set(name, new ToggleState(name));
-
-/**
- * Returns a ToggleState object that is connected to the backend WebToggleButtonRelay object that was
- * created with the same name argument.
- *
- * To register a WebToggleButtonRelay object create one with the right name and add it to the
- * WebBrowserComponent::Options struct using withOptionsFrom.
- *
- * @param {String} name
- */
-function getToggleState(name: string) {
-  if (!toggleStates.has(name)) toggleStates.set(name, new ToggleState(name));
-
-  return toggleStates.get(name);
-}
-
-const comboBoxStates = new Map();
-
-for (const name of window.__JUCE__.initialisationData.__juce__comboBoxes)
-  comboBoxStates.set(name, new ComboBoxState(name));
-
-/**
- * Returns a ComboBoxState object that is connected to the backend WebComboBoxRelay object that was
- * created with the same name argument.
- *
- * To register a WebComboBoxRelay object create one with the right name and add it to the
- * WebBrowserComponent::Options struct using withOptionsFrom.
- *
- * @param {String} name
- */
-function getComboBoxState(name: string) {
-  if (!comboBoxStates.has(name))
-    comboBoxStates.set(name, new ComboBoxState(name));
-
-  return comboBoxStates.get(name);
-}
-
-export {
-  getNativeFunction,
-  getSliderState,
-  getToggleState,
-  getComboBoxState,
-  getBackendResourceAddress,
-  ControlParameterIndexUpdater,
-};

@@ -6,6 +6,18 @@ Typescript frontend library for JUCE.
 
 I want to use TypeScript in my JUCE WebView project.
 
+## Usage
+
+```ts
+import Jucer from 'jucer'
+
+let jucer: Jucer;
+
+onMount(() => {
+  jucer = new Jucer();
+});
+```
+
 ## What
 
 - [ ] (Initial conversion of juce frontend to TypeScript.)
