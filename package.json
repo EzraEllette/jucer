@@ -1,0 +1,52 @@
+{
+  "devDependencies": {
+    "@swc/cli": "^0.4.1-nightly.20240914",
+    "@swc/core": "^1.7.26",
+    "ts-loader": "^9.5.1",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "@types/node": "^22.7.4"
+  },
+  "name": "jucer",
+  "version": "0.0.1",
+  "description": "This is a more featured package for interacting with Juce WebView projects.",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx tsc --outDir dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EzraEllette/jucer.git"
+  },
+  "keywords": [
+    "juce",
+    "web audio modules",
+    "web audio",
+    "audio modules",
+    "audio module",
+    "web audio module",
+    "juce module",
+    "juce web audio module",
+    "web",
+    "audio",
+    "modules",
+    "wam",
+    "daw",
+    "logic",
+    "pro",
+    "fl",
+    "studio",
+    "ableton",
+    "music"
+  ],
+  "author": "Ezra Ellette",
+  "license": "AGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/EzraEllette/jucer/issues"
+  },
+  "homepage": "https://github.com/EzraEllette/jucer#readme",
+  "type": "module"
+}
