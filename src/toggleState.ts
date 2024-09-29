@@ -41,7 +41,7 @@ export class ToggleState {
     );
 
     window.__JUCE__.backend.emitEvent(this.identifier, {
-      eventType: "requestInitialUpdate",
+      eventType: JuceEvents.RequestInitialUpdate,
     });
   }
 
@@ -51,7 +51,7 @@ export class ToggleState {
   }
 
   /** Informs the backend to change the associated WebToggleRelay's (C++) state. */
-  setValue(newValue) {
+  setValue(newValue: boolean) {
     this.value = newValue;
 
     window.__JUCE__.backend.emitEvent(this.identifier, {
@@ -61,7 +61,7 @@ export class ToggleState {
   }
 
   /** Internal. */
-  handleEvent(event) {
+  private handleEvent(event) {
     if (event.eventType == JuceEvents.ControlValueChanged) {
       this.value = event.value;
       this.valueChangedEvent.callListeners();

@@ -45,7 +45,7 @@ export class ComboBoxState {
     );
 
     window.__JUCE__.backend.emitEvent(this.identifier, {
-      eventType: "requestInitialUpdate",
+      eventType: JuceEvents.RequestInitialUpdate,
     });
   }
 
@@ -65,7 +65,7 @@ export class ComboBoxState {
    * This should be called with the index identifying the selected element from the
    * properties.choices array.
    */
-  setChoiceIndex(index) {
+  setChoiceIndex(index: number) {
     const numItems = this.properties.choices.length;
     this.value = numItems > 1 ? index / (numItems - 1) : 0.0;
 

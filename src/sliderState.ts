@@ -66,9 +66,9 @@ export class SliderState {
    * The meaning of this range is the same as in the case of
    * AudioProcessorParameter::getValue() (C++).
    *
-   * @param {String} newValue
+   * @param {number} newValue
    */
-  setNormalisedValue(newValue: string) {
+  setNormalisedValue(newValue: number) {
     this.scaledValue = this.snapToLegalValue(
       this.normalisedToScaledValue(newValue)
     );
@@ -129,7 +129,7 @@ export class SliderState {
    *
    * @param {String} name
    */
-  private getNormalisedValue() {
+  getNormalisedValue() {
     return Math.pow(
       (this.scaledValue - this.properties.start) /
         (this.properties.end - this.properties.start),

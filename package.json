@@ -10,7 +10,7 @@
     "@types/node": "^22.7.4"
   },
   "name": "jucer",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "This is a more featured package for interacting with Juce WebView projects.",
   "main": "src/index.ts",
   "scripts": {
